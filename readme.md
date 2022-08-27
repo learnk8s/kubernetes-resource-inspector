@@ -3,6 +3,7 @@
 - This article explain the resource allocation https://learnk8s.io/allocatable-resources
 - This is how we can ssh to the managed nodes https://gist.github.com/danielepolencic/b2b40da7c3157f5bb6c291b48279aba1  
 - We can get the total allocatable resources by describing the node `kubectl describe node`  
+- Run the script `inspector.sh` and set your k8s cluster type.
 
 ### GKE (Google Kubernetes Engine)
 
