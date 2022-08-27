@@ -3,7 +3,94 @@
 - This article explain the resource allocation https://learnk8s.io/allocatable-resources
 - This is how we can ssh to the managed nodes https://gist.github.com/danielepolencic/b2b40da7c3157f5bb6c291b48279aba1  
 - We can get the total allocatable resources by describing the node `kubectl describe node`  
-  
+
+### EKS (Elastic Kubernetes Service)
+
+- make sure you have the right kubectl context, you cen run `kubectl get node` to verify
+- kubelet service file `/etc/systemd/system/kubelet.service`
+```
+[Unit]
+Description=Kubernetes Kubelet
+Documentation=https://github.com/kubernetes/kubernetes
+After=docker.service iptables-restore.service
+Requires=docker.service
+
+[Service]
+ExecStartPre=/sbin/iptables -P FORWARD ACCEPT -w 5
+ExecStart=/usr/bin/kubelet --cloud-provider aws \
+    --config /etc/kubernetes/kubelet/kubelet-config.json \
+    --kubeconfig /var/lib/kubelet/kubeconfig \
+    --container-runtime docker \
+    --network-plugin cni $KUBELET_ARGS $KUBELET_EXTRA_ARGS
+
+Restart=always
+RestartSec=5
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
+```
+- EKS store the config in the file `/etc/kubernetes/kubelet/kubelet-config.json`
+```
+{
+  "kind": "KubeletConfiguration",
+  "apiVersion": "kubelet.config.k8s.io/v1beta1",
+  "address": "0.0.0.0",
+  "authentication": {
+    "anonymous": {
+      "enabled": false
+    },
+    "webhook": {
+      "cacheTTL": "2m0s",
+      "enabled": true
+    },
+    "x509": {
+      "clientCAFile": "/etc/kubernetes/pki/ca.crt"
+    }
+  },
+  "authorization": {
+    "mode": "Webhook",
+    "webhook": {
+      "cacheAuthorizedTTL": "5m0s",
+      "cacheUnauthorizedTTL": "30s"
+    }
+  },
+  "clusterDomain": "cluster.local",
+  "hairpinMode": "hairpin-veth",
+  "readOnlyPort": 0,
+  "cgroupDriver": "cgroupfs",
+  "cgroupRoot": "/",
+  "featureGates": {
+    "RotateKubeletServerCertificate": true
+  },
+  "protectKernelDefaults": true,
+  "serializeImagePulls": false,
+  "serverTLSBootstrap": true,
+  "tlsCipherSuites": [
+    "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+    "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+    "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305",
+    "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+    "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305",
+    "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+    "TLS_RSA_WITH_AES_256_GCM_SHA384",
+    "TLS_RSA_WITH_AES_128_GCM_SHA256"
+  ],
+  "clusterDNS": [
+    "10.100.0.10"
+  ],
+  "evictionHard": {
+    "memory.available": "100Mi",
+    "nodefs.available": "10%",
+    "nodefs.inodesFree": "5%"
+  },
+  "kubeReserved": {
+    "cpu": "70m",
+    "ephemeral-storage": "1Gi",
+    "memory": "574Mi"
+  }
+}
+```
 
 ### AKS (Azure Kubernetes Service)
 

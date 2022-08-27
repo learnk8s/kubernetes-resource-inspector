@@ -14,5 +14,5 @@ echo 'kubelet reserved:';
 echo $input | tr ' ' '\n' | grep 'kube-reserved' | cut -d '=' -f 2,3,4,5 | tr ',' '\n';
 echo $'\n';
 
-echo 'eviction hard'
+echo 'eviction threshold';
 echo "memory="$(echo $input | tr ' ' '\n' | grep 'eviction-hard' |  cut -d '=' -f 2 | cut -d ',' -f 1 | cut -d '<' -f 2)
