@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "detect the cluster ...";
+
 if [[ ! -z $(kubectl cluster-info dump | grep -e 'aws' -e 'eks') ]]
 then
   cluster="EKS";
@@ -9,6 +11,9 @@ then
 elif [[ ! -z $(kubectl cluster-info dump | grep -e 'azure' -e 'aks') ]]
 then
   cluster="AKS";   
+elif [[ ! -z $(kubectl cluster-info dump | grep -e 'linode' -e 'lke') ]]
+then
+  cluster="LKE";  
 else
   echo "this cluster is not supported";exit;
 fi
