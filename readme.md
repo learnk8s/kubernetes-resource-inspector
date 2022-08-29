@@ -311,3 +311,79 @@ streamingConnectionIdleTimeout: 4h0m0s
 syncFrequency: 1m0s
 volumeStatsAggPeriod: 1m0s
 ```
+
+### DOKS (DigitalOcean Kubernetes Service)
+
+- make sure you have the right kubectl context, you cen run `kubectl get node` to verify
+- the script use `yq` command make sure to [install it](https://kislyuk.github.io/yq/#installation).
+- kubelet service file `/etc/systemd/system/kubelet.service`
+```bash
+[Unit]
+Description=Kubernetes Kubelet Server
+Documentation=https://kubernetes.io/docs/concepts/overview/components/#kubelet
+
+[Service]
+OOMScoreAdjust=-999
+
+ExecStart=/usr/bin/kubelet \
+  --config=/etc/kubernetes/kubelet.conf \
+  --logtostderr=true \
+  --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
+  --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
+  --register-node=true \
+  --node-labels="doks.digitalocean.com/node-id=4f2b99f0-9ebd-47a5-a954-efd61779f143,doks.digitalocean.com/node-pool-id=f6e0de05-2336-4a06-834c-d02faec8006c,doks.digitalocean.com/node-pool=pool-1pvhk09r2,doks.digitalocean.com/version=1.23.9-do.0" \
+  --root-dir=/var/lib/kubelet \
+  --v=2 \
+  --cloud-provider=external \
+  --node-ip="10.106.0.2" \
+  --container-runtime=remote \
+  --container-runtime-endpoint=unix:///run/containerd/containerd.sock
+
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+- DOKS store the config in the file `/etc/kubernetes/kubelet.conf`
+```yaml
+kind: KubeletConfiguration
+providerID: "digitalocean://314476419"
+apiVersion: kubelet.config.k8s.io/v1beta1
+staticPodPath: "/etc/kubernetes/manifests"
+rotateCertificates: true
+authentication:
+  anonymous:
+    enabled: false
+  webhook:
+    enabled: true
+  x509:
+    clientCAFile: "/etc/kubernetes/ca.pem"
+authorization:
+  mode: AlwaysAllow
+runtimeRequestTimeout: "15m"
+clusterDomain: cluster.local
+clusterDNS:
+  - 10.245.0.10
+kubeReserved:
+  memory: "369432Ki"
+  cpu: "100m"
+  pid: "1024"
+evictionHard:
+  memory.available: "51200Ki"
+  pid.available: 10%
+  # The nodefs and imagefs reference the same fs in DOKS, but the reason
+  # for the eviction matters in how its handled. Images will only be cleaned
+  # if the imagefs limits are hit.
+  imagefs.inodesFree: 6%
+  # Note: these are the defaults, but spelled out here for clarity.
+  nodefs.available: 10%
+  nodefs.inodesFree: 5%
+  imagefs.available: 15%
+serverTLSBootstrap: true
+serializeImagePulls: false
+# Delay node shutdown for 30s to give pods time to terminate gracefully. Normal
+# pods will be shut down during the first 20s, then critical pods will have 10s.
+shutdownGracePeriod: 30s
+shutdownGracePeriodCriticalPods: 10s
+```

@@ -2,18 +2,21 @@
 
 echo "detect the cluster ...";
 
-if [[ ! -z $(kubectl cluster-info dump | grep -e 'aws' -e 'eks') ]]
+if [[ ! -z $(kubectl cluster-info dump | grep -e 'eks') ]]
 then
   cluster="EKS";
-elif [[ ! -z $(kubectl cluster-info dump | grep -e 'gcp' -e 'gke') ]]
+elif [[ ! -z $(kubectl cluster-info dump | grep -e 'gke') ]]
 then
   cluster="GKE"; 
-elif [[ ! -z $(kubectl cluster-info dump | grep -e 'azure' -e 'aks') ]]
+elif [[ ! -z $(kubectl cluster-info dump | grep -e 'aks') ]]
 then
   cluster="AKS";   
-elif [[ ! -z $(kubectl cluster-info dump | grep -e 'linode' -e 'lke') ]]
+elif [[ ! -z $(kubectl cluster-info dump | grep -e 'lke') ]]
 then
   cluster="LKE";  
+elif [[ ! -z $(kubectl cluster-info dump | grep -e 'doks') ]]
+then
+  cluster="DOKS";  
 else
   echo "this cluster is not supported";exit;
 fi
