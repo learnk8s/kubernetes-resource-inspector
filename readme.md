@@ -77,6 +77,7 @@ staticPodPath: /etc/kubernetes/manifests
 
 - make sure you have the right kubectl context, you cen run `kubectl get node` to verify
 - the script use `jq` command make sure to [install it](https://formulae.brew.sh/formula/jq).
+- you can customize the reserved resources with [eksctl](https://eksctl.io/usage/customizing-the-kubelet/).
 - kubelet service file `/etc/systemd/system/kubelet.service`
 ```bash
 [Unit]

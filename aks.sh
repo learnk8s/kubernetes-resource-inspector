@@ -3,9 +3,8 @@ node=$(kubectl get node -o name | head -n 1)
 file="/host/etc/default/kubelet"
 input=$(kubectl debug "$node" -it  --image xxradar/hackon -- cat $file)
 
-echo 'os reserved:'
-echo 'cpu=100m';
-echo 'memory=100Mi';
+echo 'system reserved:'
+echo $input | tr ' ' '\n' | grep 'system-reserved' | cut -d '=' -f 2,3,4,5 | tr ',' '\n';
 echo $'\n';
 
 echo 'kubelet reserved:';
